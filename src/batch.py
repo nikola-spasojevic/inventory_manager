@@ -11,7 +11,14 @@ class Freshness(Enum):
 	EXPIRED = 3
 
 class Batch:
-	def __init__(self, product_name: str, supplier: str, total_stock_count: int, expiry_date: str)->None:
+	def __init__(self, product_name, supplier, total_stock_count, expiry_date: str):
+		"""
+		Args:
+			product_name (str): The name of the food being added as a batch
+			supplier (str): Name of the supplier providing the food
+			total_stock_count (int): Number of units delivered to warehouse (Number of available units)
+			expiry_date (str): Expiry date of product (this determines the freshness of the product)
+		"""
 		self.product_name = product_name
 		self.supplier = supplier
 		self.total_stock_count = total_stock_count
@@ -26,25 +33,37 @@ class Batch:
 		self.update_log('NEW BATCH ADDED')
 		self.update_freshness()
 
-	def update_log(self, comment: str)->None:
+	def update_log(self, comment):
 		"""
-		Keep a log of: type of edit (e.g. new batch, expired products), current date of log, remaining units
+		Keep a log of: type of edit, input date, remaining units
+
+		Args:
+			comment (str): type of edit (e.g. new batch, expired products)
 		"""
 		now = datetime.now().strftime("%Y-%m-%d")
 		units_remaining = self.total_stock_count - self.delivered_units
 		new_log = '{}: {}, number of units remaining: {}'.format(now, comment, units_remaining)
 		self.log.append(new_log)
 
-	def get_log(self)->None:
+	def get_log(self):
 		"""
-		Returns all logs from the log list
+		Returns:
+			log (List[str]): the batche's log list
 		"""
-		for l in self.log:
-			print(l)
+		return self.log
 
-	def update_total_stock_count(self, new_stock_count: int)->None:
+	def get_remaining_units(self):
+		"""
+		Retrieve remaining units in batch
+		"""
+		return self.remaining_units
+
+	def update_total_stock_count(self, new_stock_count):
 		"""
 		Update/Correct the original total stock of a batch and log the change
+
+		Args:
+			new_stock_count (int): Original number of available units
 		"""
 		try:
 			val = int(new_stock_count)
@@ -59,7 +78,7 @@ class Batch:
 		except ValueError:
 			raise ValueError('Invalid input format')
 
-	def update_remaining_count(self)->int:
+	def update_remaining_count(self):
 		"""
 		Update the remaining stock count within a batch
 		"""
@@ -69,9 +88,12 @@ class Batch:
 
 		self.remaining_units = val
 
-	def deliver(self, delivered_units: int)->None:
+	def deliver(self, delivered_units):
 		"""
-		Update number of delivered units (number of products that are sent to clients' fridges)
+		Update number of delivered units
+
+		Args:
+			delivered_units (int): number of products that are sent to clients' fridges
 		"""
 		if delivered_units > self.remaining_units:
 			raise ValueError("There aren't enough units left in stock for this order!")
@@ -84,7 +106,10 @@ class Batch:
 
 	def waste(self, wasted_units: int)->None:
 		"""
-		Update number of wasted units (number of lost/defective/spoiled products)
+		Update number of wasted units
+
+		Args:
+			wasted_units (int): number of lost/defective/spoiled products
 		"""
 		if wasted_units > self.remaining_units:
 			raise ValueError("There aren't that many units to be corrected!")
@@ -108,12 +133,26 @@ class Batch:
 			self.freshness = Freshness.EXPIRED
 			self.wasted_units = self.remaining_units
 			self.update_remaining_count()
+			self.update_log('BATCH EXPIRED!')
 		elif delta < 2:
 			self.freshness = Freshness.EXPIRING
+			self.update_log('BATCH EXPIRING!')
 
 	def get_freshness(self):
 		"""
 		Update and return the freshness level of the batch
+
+		Returns:
+			freshness (Freshness): current freshness value of batch
 		"""
 		self.update_freshness()
 		return self.freshness
+
+	def get_batch_inventory(self):
+		"""
+		Retrieves the available units of the product within a batch
+
+		Returns:
+			(product_name, remaining_units): Tuple[str, str]
+		"""
+		return (self.product_name, self.remaining_units)
