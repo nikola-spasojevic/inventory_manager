@@ -13,7 +13,7 @@ def test_add_batch():
 				Batch('Ramen', 'IKOO', 500, '2019-04-05')
 			]
 	warehouse.add_batches(batches)
-	assert len(warehouse.batches) == 3
+	assert len(warehouse.product_batches) == 3
 
 def test_get_batch():
 	"""
@@ -23,11 +23,11 @@ def test_get_batch():
 	now = datetime.now().strftime(date_format)
 	b_1 = Batch('Chicken Satay', 'LILYs', 1000, '2019-04-01')
 	warehouse.add_batches([b_1])
-	batch = warehouse.get_batch('Chicken Satay', 'LILYs', b_1.received_date)
+	batch = warehouse.get_batch_by_product('Chicken Satay', 'LILYs', b_1.received_date)
 	assert batch == b_1
 
 	with pytest.raises(ValueError):
-		batch = warehouse.get_batch('Chicken Satay', 'LILYs', '2019-04-05')
+		batch = warehouse.get_batch_by_product('Chicken Satay', 'LILYs', '2019-04-05')
 
 def test_freshness():
 	"""

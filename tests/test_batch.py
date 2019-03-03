@@ -56,8 +56,8 @@ def test_expired_arrival():
 	assert new_batch.wasted_units == 1000
 	assert new_batch.remaining_units == 0
 
-def test_batch_inventory():
-	new_batch = Batch('Chicken Satay', 'LILYs', 1000, '2019-05-01')
-	assert new_batch.get_batch_inventory() == ('Chicken Satay', 1000)
+# def test_batch_inventory():
+# 	new_batch = Batch('Chicken Satay', 'LILYs', 1000, '2019-05-01')
+# 	assert new_batch.get_batch_inventory() == ('Chicken Satay', 1000)
 
 

@@ -11,7 +11,7 @@ class Freshness(Enum):
 	EXPIRED = 3
 
 class Batch:
-	def __init__(self, product_name, supplier, total_stock_count, expiry_date: str):
+	def __init__(self, product_name, supplier, total_stock_count, expiry_date):
 		"""
 		Args:
 			product_name (str): The name of the food being added as a batch
@@ -104,7 +104,7 @@ class Batch:
 		comment = '{} units DELIVERED'.format(delivered_units)
 		self.update_log(comment)
 
-	def waste(self, wasted_units: int)->None:
+	def waste(self, wasted_units):
 		"""
 		Update number of wasted units
 
@@ -148,11 +148,11 @@ class Batch:
 		self.update_freshness()
 		return self.freshness
 
-	def get_batch_inventory(self):
-		"""
-		Retrieves the available units of the product within a batch
+	# def get_batch_inventory(self):
+	# 	"""
+	# 	Retrieves the available units of the product within a batch
 
-		Returns:
-			(product_name, remaining_units): Tuple[str, str]
-		"""
-		return (self.product_name, self.remaining_units)
+	# 	Returns:
+	# 		(product_name, remaining_units): Tuple[str, str]
+	# 	"""
+	# 	return (self.product_name, self.remaining_units)
