@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from inventory_manager.src.batch import Batch, Freshness, date_format
+from ..src.batch import Batch, Freshness, date_format
 
 def test_new_batch():
 	new_batch = Batch('Chicken Satay', 'LILYs', 1000, '2019-04-01')

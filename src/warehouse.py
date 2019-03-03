@@ -20,11 +20,11 @@ class Warehouse:
 			batches (List[Batch]): predefined batches to be added to warehouse
 		"""
 		for b in batches:
-			self.product_batches[b.product_name][b.supplier][b.received_date] = b
+			self.product_batches[b.product_name][b.supplier][b.received_date] = b.remaining_units
 
 		self.id2batch[b.id] = b
 
-	def get_batch_by_product(self, product_name, supplier, received_date):
+	def get_batch(self, product_name, supplier, received_date):
 		"""
 		Retrive batch using unique (product, supplier, received_date) tuple
 
@@ -44,6 +44,25 @@ class Warehouse:
 			raise ValueError("Specified date not available!")
 
 		return self.product_batches[product_name][supplier][received_date]
+
+
+	def get_batch_by_id(self, batch_id):
+		"""
+		Retrieves the inventory of a specific batch
+	
+		Args:
+			batch_id (int): unique batch ID number
+
+		Returns:
+			(product_name, remaining_units) of type (Tuple[str, int])
+		"""
+		batch = self.id2batch.get(batch_id, None)
+
+		if batch is None:
+			raise ValueError("Invalid batch ID!")
+
+		# return (batch.product_name, batch.remaining_units)
+		return batch
 
 	def get_product_inventory(self, product_name):
 		""""
@@ -66,23 +85,6 @@ class Warehouse:
 					product_inventory.append((b.id, b.product_name, b.remaining_units))
 
 		return product_inventory
-
-	def get_batch_by_id(self, batch_id):
-		"""
-		Retrieves the inventory of a specific batch
-	
-		Args:
-			batch_id (int): unique batch ID number
-
-		Returns:
-			(product_name, remaining_units) of type (Tuple[str, int])
-		"""
-		batch = self.id2batch.get(batch_id, None)
-
-		if batch is None:
-			raise ValueError("Invalid batch ID!")
-
-		return (batch.product_name, batch.remaining_units)
 
 
 	def get_freshness_overview(self):

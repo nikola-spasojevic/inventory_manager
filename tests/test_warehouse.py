@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
-from inventory_manager.src.warehouse import Warehouse
-from inventory_manager.src.batch import Batch, Freshness, date_format
+from ..src.warehouse import Warehouse
+from ..src.batch import Batch, Freshness, date_format
 
 def test_add_batch():
 	"""
@@ -43,6 +43,15 @@ def test_freshness():
 	
 	assert freshness == {Freshness.FRESH: 1200, Freshness.EXPIRED: 500}
 
+
+def test_get_batch_by_id():
+	pass
+
+def test_get_product_inventory():
+	pass
+
+def test_get_batch_by_product():
+	pass
 
 
 

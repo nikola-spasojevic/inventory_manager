@@ -11,6 +11,8 @@ class Freshness(Enum):
 	EXPIRED = 3
 
 class Batch:
+	idCounter = 0
+
 	def __init__(self, product_name, supplier, total_stock_count, expiry_date):
 		"""
 		Args:
@@ -28,10 +30,11 @@ class Batch:
 		self.wasted_units = 0
 		self.expiry_date = datetime.strptime(expiry_date, date_format)
 		self.freshness = Freshness.FRESH
-		self.id = uuid.uuid4()
+		self.id = Batch.idCounter # self.id = uuid.uuid4()
 		self.log = []
 		self.update_log('NEW BATCH ADDED')
 		self.update_freshness()
+		Batch.idCounter += 1
 
 	def update_log(self, comment):
 		"""
