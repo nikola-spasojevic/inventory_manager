@@ -1,7 +1,7 @@
 from datetime import datetime
 from collections import defaultdict
 from enum import Enum
-import uuid
+from .product import Product
 
 date_format = "%Y-%m-%d"
 
@@ -13,28 +13,30 @@ class Freshness(Enum):
 class Batch:
 	idCounter = 0
 
-	def __init__(self, product_name, supplier, total_stock_count, expiry_date):
+	def __init__(self, product, total_stock_count, expiry_date):
 		"""
 		Args:
-			product_name (str): The name of the food being added as a batch
-			supplier (str): Name of the supplier providing the food
+			product (Product): custom class containing (product_name, supplier, product_id)
 			total_stock_count (int): Number of units delivered to warehouse (Number of available units)
 			expiry_date (str): Expiry date of product (this determines the freshness of the product)
 		"""
-		self.product_name = product_name
-		self.supplier = supplier
+		self.product = product
 		self.total_stock_count = total_stock_count
+		self.expiry_date = datetime.strptime(expiry_date, date_format)
 		self.received_date = datetime.now().strftime(date_format)
 		self.remaining_units = total_stock_count 
 		self.delivered_units = 0
 		self.wasted_units = 0
-		self.expiry_date = datetime.strptime(expiry_date, date_format)
 		self.freshness = Freshness.FRESH
-		self.id = Batch.idCounter # self.id = uuid.uuid4()
 		self.log = []
+		self.id = Batch.idCounter
 		self.update_log('NEW BATCH ADDED')
 		self.update_freshness()
 		Batch.idCounter += 1
+
+	def __eq__(self, other):
+		return 	self.product == other.product\
+			and self.received_date == other.received_date
 
 	def update_log(self, comment):
 		"""
@@ -151,11 +153,13 @@ class Batch:
 		self.update_freshness()
 		return self.freshness
 
-	# def get_batch_inventory(self):
-	# 	"""
-	# 	Retrieves the available units of the product within a batch
+	def get_inventory(self):
+		"""
+		Retrieves current inventory per product for batch
 
-	# 	Returns:
-	# 		(product_name, remaining_units): Tuple[str, str]
-	# 	"""
-	# 	return (self.product_name, self.remaining_units)
+		Returns:
+			product_name, remaining_units (Tuple[str, int])
+		"""
+		return (self.product.product_name, self.remaining_units)
+
+

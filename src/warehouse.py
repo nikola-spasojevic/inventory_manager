@@ -3,47 +3,72 @@ from typing import List
 from .batch import Batch, Freshness
 
 class Warehouse:
+	product2id = {}
+	id2product = {}
+	product_id_counter = 0
+
 	def __init__(self):
 		"""
-		product_batches (Dict[str, Dict[str, Dict[str, int]]]): represents a nested dict of: product_name (str) -> supplier (str) -> received_date (str) -> batch (Batch)
+		batches (Dict[str, Dict[str, Dict[str, int]]]): represents a nested dict of: product_name (str) -> supplier (str) -> expiry_date (str) -> batch (Batch)
 		id2batch (Dict[int, Batch]): mapping of unique batch id to batch
 		"""
 		nested_dict = lambda: defaultdict(nested_dict)
-		self.product_batches = nested_dict()
+		self.batches = nested_dict()
 		self.id2batch = defaultdict(Batch)
+		self.product_id_mapping = {}
 
-	def add_batches(self, batches):
+	def add_batch(self, product, total_stock_count, expiry_date):
 		"""
-		Add batches from list to the product_batches dictionary. The key for each batch is it's unique (product, supplier, received_date) tuple
+		Add new batch to the batches dictionary
+		The key for each batch is it's unique (product, supplier, expiry_date) tuple
+		A batch_id mapping is maintained by id2batch dictionary
 
 		Args:
-			batches (List[Batch]): predefined batches to be added to warehouse
-		"""
-		for b in batches:
-			self.product_batches[b.product_name][b.supplier][b.received_date] = b.remaining_units
+			product (Product): custom class containing (product_name, supplier, product_id)
+			total_stock_count (int): Number of units delivered to warehouse (Number of available units)
+			expiry_date (str): Expiry date of product (this determines the freshness of the product)
 
-		self.id2batch[b.id] = b
-
-	def get_batch(self, product_name, supplier, received_date):
+		Returns:
+			batch_id (int)
 		"""
-		Retrive batch using unique (product, supplier, received_date) tuple
+		self.add_product_to_warehouse(product)
+		batch = Batch(product, total_stock_count, expiry_date)
+		self.batches[batch.product.product_name][batch.product.supplier][batch.expiry_date] = batch
+		self.id2batch[batch.id] = batch
+		return batch.id
+
+	def add_product_to_warehouse(self, product):
+		"""
+		Check if product is already registered in warehouse. If not, assign unique product_id
+
+		Args:
+			product (Product): custom class containing (product_name, supplier, product_id)
+		"""
+		if product not in Warehouse.product2id:
+			Warehouse.product2id[product] = Warehouse.product_id_counter
+			Warehouse.id2product[Warehouse.product_id_counter] = product
+			Warehouse.product_id_counter += 1
+
+	def get_batch(self, product_name, supplier, expiry_date):
+		"""
+		Retrive batch using unique (product, supplier, expiry_date) tuple
 
 		Args:
 			product_name (str): The name of the food being added as a batch
 			supplier (str): Name of the supplier providing the food
-			received_date (str): When the product was received in the warehouse (received_date)
+			expiry_date (str): Expiry date of product (this determines the freshness of the product)
 
 		Returns:
 			Selected batch from warehouse (Batch) - raises ValueError if batch doesnt exist
 		"""
-		if product_name not in self.product_batches:
+		if product_name not in self.batches:
 			raise ValueError("Specified product not available!")
-		if supplier not in self.product_batches[product_name]:
+		if supplier not in self.batches[product_name]:
 			raise ValueError("Specified supplier not available!")
-		if received_date not in self.product_batches[product_name][supplier]:
-			raise ValueError("Specified date not available!")
+		if expiry_date not in self.batches[product_name][supplier]:
+			raise ValueError("Specified expiry date not available!")
 
-		return self.product_batches[product_name][supplier][received_date]
+		return self.batches[product_name][supplier][expiry_date]
 
 
 	def get_batch_by_id(self, batch_id):
@@ -61,10 +86,20 @@ class Warehouse:
 		if batch is None:
 			raise ValueError("Invalid batch ID!")
 
-		# return (batch.product_name, batch.remaining_units)
 		return batch
 
-	def get_product_inventory(self, product_name):
+	def get_batch_inventory(self, batch_id):
+		"""
+		Args:
+			batch_id (int): unique batch ID number
+
+		Returns:
+			product_name, remaining_units (Tuple[str, int])
+		"""
+		batch = get_batch_by_id(batch_id)
+		return batch.get_inventory()
+
+	def get_inventory_per_productname(self, product_name):
 		""""
 		Retrieves the inventories of all batches containing a specific product
 	
@@ -72,20 +107,20 @@ class Warehouse:
 			product_name (str): The name of the food from the batch
 
 		Returns:
-			list of tuples (batch_id, product_name, remaining_units) tuple (List[Tuple[int, str, int]])
+			mapping of batch_id to (product_name, remaining_units): (Dict[Tuple[str, int]])
 		"""
 		if product_name not in self.batches:
 			raise ValueError("Specified product not available!")
 
-		product_inventory = []
+		product_inventory = {}
 
-		for suppliers in self.batches[product_name]:
-			for dates in suppliers:
-				for b in dates:
-					product_inventory.append((b.id, b.product_name, b.remaining_units))
+		for products, suppliers in self.batches.items():
+			if products == product_name:
+				for _, dates in suppliers.items():
+					for _, batch in dates.items():
+						product_inventory[batch.id] = (batch.product.product_name, batch.remaining_units)
 
 		return product_inventory
-
 
 	def get_freshness_overview(self):
 		"""
@@ -93,9 +128,11 @@ class Warehouse:
 			freshness of food in warehouse (Dict[Freshness, int])
 		"""
 		freshness = Counter()
-		for _, suppliers in self.product_batches.items():
+		for _, suppliers in self.batches.items():
 			for _, dates in suppliers.items():
-				for _, b in dates.items():
-						freshness[b.get_freshness()] += b.get_remaining_units()
+				for _, batch in dates.items():
+						freshness[batch.get_freshness()] += batch.get_remaining_units()
 
-		return freshness
+		x = dict(freshness.items())
+
+		return x
