@@ -1,5 +1,6 @@
 import pytest
 from datetime import datetime
+from collections import defaultdict, Counter
 from ..src.warehouse import Warehouse
 from ..src.batch import Batch, Freshness, date_format
 from ..src.product import Product
@@ -49,11 +50,15 @@ def test_freshness():
 	Test warehouse freshness, whether it represntes correct FRESH, EXPIRING, EXPIRED values
 	"""
 	warehouse = Warehouse()
+	f = defaultdict(Counter)
 	warehouse.add_batch(product_1, 1000, '2019-04-01')
+	f[product_1.product_name]['Freshness.FRESH']= 1000
 	warehouse.add_batch(product_2, 200, '2019-04-10')
+	f[product_2.product_name]['Freshness.FRESH']= 200
 	warehouse.add_batch(product_3, 500, '2018-04-05')
-	freshness = warehouse.get_freshness_overview()
-	assert freshness == {Freshness.FRESH: 1200, Freshness.EXPIRED: 500}
+	f[product_3.product_name]['Freshness.EXPIRED']= 500
+	freshness = warehouse.get_freshness()
+	assert freshness == f
 
 def test_get_batch_by_id():
 	warehouse = Warehouse()
@@ -69,12 +74,9 @@ def test_get_inventory_per_productname():
 	warehouse.add_batch(product_1, 1000, '2019-04-21')
 	warehouse.add_batch(product_3, 500, '2018-04-07')
 	warehouse.add_batch(product_3, 500, '2018-04-05')
-	assert len(warehouse.get_inventory_per_productname('Chicken Satay')) == 3
-	assert len(warehouse.get_inventory_per_productname('Ramen')) == 2
 
-def test_get_batch_by_product():
-	pass
-
+	assert len(warehouse.get_product_inventory(warehouse.product2id[product_1])) == 3
+	assert len(warehouse.get_product_inventory(warehouse.product2id[product_3])) == 2
 
 
 

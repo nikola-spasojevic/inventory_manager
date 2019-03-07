@@ -1,5 +1,6 @@
+import json
 from datetime import datetime
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from enum import Enum
 from .product import Product
 
@@ -45,17 +46,23 @@ class Batch:
 		Args:
 			comment (str): type of edit (e.g. new batch, expired products)
 		"""
-		now = datetime.now().strftime("%Y-%m-%d")
+		now = datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
 		units_remaining = self.total_stock_count - self.delivered_units
-		new_log = '{}: {}, number of units remaining: {}'.format(now, comment, units_remaining)
-		self.log.append(new_log)
+		self.log.append({
+			'comment': comment, 
+			'timestamp': now, 
+			'units remaining:': units_remaining
+			})
 
 	def get_log(self):
 		"""
 		Returns:
-			log (List[str]): the batche's log list
+			dict of batch id and array of logs
 		"""
-		return self.log
+		return {
+			'Batch ID':self.id,
+			'log': self.log
+			}
 
 	def get_remaining_units(self):
 		"""

@@ -15,7 +15,6 @@ class Warehouse:
 		nested_dict = lambda: defaultdict(nested_dict)
 		self.batches = nested_dict()
 		self.id2batch = defaultdict(Batch)
-		self.product_id_mapping = {}
 
 	def add_batch(self, product, total_stock_count, expiry_date):
 		"""
@@ -89,50 +88,85 @@ class Warehouse:
 		return batch
 
 	def get_batch_inventory(self, batch_id):
+		batch = self.get_batch_by_id(batch_id)
+		js = {
+				'Batch ID': batch.id,
+				'Product Name': batch.product.product_name,
+				'Remaining Units': batch.remaining_units,
+				'Expiry Date': batch.expiry_date
+			}
+		return js
+
+	def update_batch_stock_count(self, batch_id, new_stock_count):
 		"""
+		Update/Correct the original total stock of a batch and log the change
+		
 		Args:
 			batch_id (int): unique batch ID number
-
-		Returns:
-			product_name, remaining_units (Tuple[str, int])
+			new_stock_count (int): Original number of available units
 		"""
-		batch = get_batch_by_id(batch_id)
-		return batch.get_inventory()
+		try:
+			batch = self.get_batch_by_id(batch_id)
+			batch.update_total_stock_count(new_stock_count)
+		except ValueError:
+			raise ValueError('Invalid input format')
 
-	def get_inventory_per_productname(self, product_name):
+	def get_product_inventory(self, product_id):
 		""""
 		Retrieves the inventories of all batches containing a specific product
 	
 		Args:
-			product_name (str): The name of the food from the batch
+			product_id (int)
 
 		Returns:
-			mapping of batch_id to (product_name, remaining_units): (Dict[Tuple[str, int]])
+			product_inventory: mapping of batch_id to (product_name, remaining_units): (Dict[Tuple[str, int]])
 		"""
-		if product_name not in self.batches:
-			raise ValueError("Specified product not available!")
+		product = Warehouse.id2product.get(product_id, None)
+		if product is None:
+			raise ValueError("Specified product ID not available!")
 
-		product_inventory = {}
+		product_inventory = []
 
-		for products, suppliers in self.batches.items():
-			if products == product_name:
-				for _, dates in suppliers.items():
+		for p, s in self.batches.items():
+			if p == product.product_name:
+				for _, dates in s.items():
 					for _, batch in dates.items():
-						product_inventory[batch.id] = (batch.product.product_name, batch.remaining_units)
+						product_inventory.append({
+							'Batch ID': batch.id,
+							'Product Name': batch.product.product_name,
+							'Product ID': product_id,
+							'Remaining Units': batch.remaining_units
+							})
 
 		return product_inventory
 
-	def get_freshness_overview(self):
+	def get_freshness(self):
 		"""
 		Returns:
-			freshness of food in warehouse (Dict[Freshness, int])
+			freshness per product in warehouse (Dict[Freshness, int])
 		"""
-		freshness = Counter()
-		for _, suppliers in self.batches.items():
-			for _, dates in suppliers.items():
+		freshness = defaultdict(Counter)
+
+		for p, s in self.batches.items():
+			for _, dates in s.items():
 				for _, batch in dates.items():
-						freshness[batch.get_freshness()] += batch.get_remaining_units()
+					freshness[p][str(batch.get_freshness())] += batch.get_remaining_units()
 
-		x = dict(freshness.items())
+		return freshness
 
-		return x
+	def get_products(self):
+		"""
+		Returns:
+			product to id mapping (Dict[Product, int])
+		"""
+		product_inventory = defaultdict(list)
+
+		for p, s in self.batches.items():
+			for _, dates in s.items():
+				for _, batch in dates.items():
+					product_inventory[batch.product.product_name].append({
+						'Batch ID': batch.id,
+						'Remaining Units': batch.remaining_units
+						})
+
+		return product_inventory
