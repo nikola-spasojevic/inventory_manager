@@ -168,5 +168,3 @@ class Batch:
 			product_name, remaining_units (Tuple[str, int])
 		"""
 		return (self.product.product_name, self.remaining_units)
-
-

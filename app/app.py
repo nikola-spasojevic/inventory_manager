@@ -61,42 +61,30 @@ def get_product_inventory(product_id):
 def get_batch(batch_id):
 	try:
 		return jsonify(warehouse.get_batch_inventory(batch_id))
-	except ValueError:
-		abort(404)
-
-# Update/Modify stock of any batch
-# curl -XPUT -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/update_batch/0 -d '{'remaining_units': '2000'}'| python -m json.tool
-@app.route('/inventory_manager/api/v1.0/update_batch/<int:batch_id>', methods=['PUT'])
-def update_batch(batch_id):
-	try:
-		if not request.json:
-			abort(400)
-
-		batch = warehouse.get_batch_by_id(batch_id)
-		if batch is None:
-			abort(404)
-		#if 'remaining_units' in request.json and type(request.json['remaining_units']) != unicode:
-		#	abort(400)
-
-		remaining_units = request.json['remaining_units']
-
-		# batch. = request.json.get('remaining_units', warehouse.id2batch(batch_id).remaining_units)
-		return jsonify(remaining_units)
 	except:
 		abort(404)
 
-# @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['PUT'])
-# def update_task(task_id):
-#     task = [task for task in tasks if task['id'] == task_id]
-#     if len(task) == 0:
-#         abort(404)
-    
-    
-#     task[0]['title'] = request.json.get('title', task[0]['title'])
-#     task[0]['description'] = request.json.get('description', task[0]['description'])
-#     task[0]['done'] = request.json.get('done', task[0]['done'])
-#     return jsonify({'task': task[0]})
+# Update/Modify stock of any batch
+@app.route('/inventory_manager/api/v1.0/update_batch/<int:batch_id>', methods=['PUT'])
+def update_batch(batch_id):
+	try:	
+		batch = warehouse.get_batch_by_id(batch_id)
+		new_stock_count = request.json['new_stock_count']
+		print(new_stock_count)
+		warehouse.update_batch_stock_count(batch_id, new_stock_count)
+		return jsonify(warehouse.get_batch_inventory(batch_id))
+	except ValueError:
+		abort(404)
 
+@app.route('/todo/api/v1.0/add_batch/', methods=['POST'])
+def add_batch():
+	try:
+		new_batch = request.json['batch']
+		product = Product(new_batch['product']['product_name'], new_batch['product']['supplier'])
+		batch_id = warehouse.add_batch(product, new_batch['total_stock_count'], new_batch['expiry_date'])
+		return jsonify(new_batch)
+	except:
+		abort(404)
 
 if __name__ == '__main__':
     app.run(debug=True)

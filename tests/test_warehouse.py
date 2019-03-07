@@ -77,8 +77,3 @@ def test_get_inventory_per_productname():
 
 	assert len(warehouse.get_product_inventory(warehouse.product2id[product_1])) == 3
 	assert len(warehouse.get_product_inventory(warehouse.product2id[product_3])) == 2
-
-
-
-
-
