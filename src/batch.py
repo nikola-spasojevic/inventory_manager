@@ -18,7 +18,7 @@ class Batch:
 		"""
 		Args:
 			product (Product): custom class containing (product_name, supplier, product_id)
-			total_stock_count (int): Number of units delivered to warehouse (Number of available units)
+			update_total_stock_count (int): Number of units delivered to warehouse (Number of available units)
 			expiry_date (str): Expiry date of product (this determines the freshness of the product)
 		"""
 		self.product = product
@@ -47,11 +47,12 @@ class Batch:
 			comment (str): type of edit (e.g. new batch, expired products)
 		"""
 		now = datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
-		units_remaining = self.total_stock_count - self.delivered_units
+		self.update_remaining_count()
+		# units_remaining = self.total_stock_count - self.delivered_units - self.wasted_units
 		self.log.append({
 			'comment': comment, 
 			'timestamp': now, 
-			'units remaining:': units_remaining
+			'units remaining:': self.remaining_units
 			})
 
 	def get_log(self):
@@ -68,6 +69,7 @@ class Batch:
 		"""
 		Retrieve remaining units in batch
 		"""
+		self.update_remaining_count()
 		return self.remaining_units
 
 	def update_total_stock_count(self, new_stock_count):
@@ -142,10 +144,12 @@ class Batch:
 		delta = (self.expiry_date - now).days
 
 		if delta < 0:
-			self.freshness = Freshness.EXPIRED
-			self.wasted_units = self.remaining_units
-			self.update_remaining_count()
-			self.update_log('BATCH EXPIRED!')
+			if self.freshness != Freshness.EXPIRED:
+				self.freshness = Freshness.EXPIRED
+				self.waste(self.remaining_units)
+				# self.wasted_units = self.remaining_units
+				# self.update_remaining_count()
+				self.update_log('BATCH EXPIRED!')
 		elif delta < 2:
 			self.freshness = Freshness.EXPIRING
 			self.update_log('BATCH EXPIRING!')
