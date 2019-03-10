@@ -47,12 +47,10 @@ class Batch:
 			comment (str): type of edit (e.g. new batch, expired products)
 		"""
 		now = datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
-		self.update_remaining_count()
-		# units_remaining = self.total_stock_count - self.delivered_units - self.wasted_units
 		self.log.append({
 			'comment': comment, 
 			'timestamp': now, 
-			'units remaining:': self.remaining_units
+			'units remaining:': self.get_remaining_units()
 			})
 
 	def get_log(self):
@@ -61,7 +59,7 @@ class Batch:
 			dict of batch id and array of logs
 		"""
 		return {
-			'Batch ID':self.id,
+			'Batch ID': self.id,
 			'log': self.log
 			}
 
