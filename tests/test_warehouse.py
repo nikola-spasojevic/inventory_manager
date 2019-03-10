@@ -50,13 +50,15 @@ def test_freshness():
 	Test warehouse freshness, whether it represntes correct FRESH, EXPIRING, EXPIRED values
 	"""
 	warehouse = Warehouse()
-	f = defaultdict(Counter)
 	warehouse.add_batch(product_1, 1000, '2019-04-01')
-	f[product_1.product_name]['Freshness.FRESH']= 1000
 	warehouse.add_batch(product_2, 200, '2019-04-10')
+	#warehouse.add_batch(product_3, 500, '2018-06-05')
+
+	f = defaultdict(Counter)
+	f[product_1.product_name]['Freshness.FRESH']= 1000
 	f[product_2.product_name]['Freshness.FRESH']= 200
-	warehouse.add_batch(product_3, 500, '2018-04-05')
-	f[product_3.product_name]['Freshness.EXPIRED']= 500
+	#f[product_3.product_name]['Freshness.FRESH']= 500
+	
 	freshness = warehouse.get_freshness()
 	assert freshness == f
 
