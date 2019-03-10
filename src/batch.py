@@ -84,6 +84,7 @@ class Batch:
 
 			self.total_stock_count = val
 			self.update_remaining_count()
+			self.update_freshness()
 
 			comment = 'Original stock amount updated to {}'.format(val)
 			self.update_log(comment)
@@ -141,13 +142,13 @@ class Batch:
 		now = datetime.now()
 		delta = (self.expiry_date - now).days
 
-		if delta < 0:
-			if self.freshness != Freshness.EXPIRED:
-				self.freshness = Freshness.EXPIRED
-				self.waste(self.remaining_units)
-				# self.wasted_units = self.remaining_units
-				# self.update_remaining_count()
-				self.update_log('BATCH EXPIRED!')
+		if delta < -1:
+			#if self.freshness != Freshness.EXPIRED:
+			self.freshness = Freshness.EXPIRED
+			self.waste(self.remaining_units)
+			# self.wasted_units = self.remaining_units
+			# self.update_remaining_count()
+			self.update_log('BATCH EXPIRED!')
 		elif delta < 2:
 			self.freshness = Freshness.EXPIRING
 			self.update_log('BATCH EXPIRING!')
