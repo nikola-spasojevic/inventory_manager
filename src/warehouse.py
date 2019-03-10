@@ -9,7 +9,7 @@ class Warehouse:
 
 	def __init__(self):
 		"""
-		batches (Dict[str, Dict[str, Dict[str, int]]]): represents a nested dict of: product_name (str) -> supplier (str) -> expiry_date (str) -> batch (Batch)
+		batches (Dict[str, Dict[str, Dict[str, Batch]]]): represents a nested dict of: product_name (str) -> supplier (str) -> expiry_date (str) -> batch (Batch)
 		id2batch (Dict[int, Batch]): mapping of unique batch id to batch
 		"""
 		nested_dict = lambda: defaultdict(nested_dict)
@@ -92,6 +92,7 @@ class Warehouse:
 		js = {
 				'Batch ID': batch.id,
 				'Product Name': batch.product.product_name,
+				'Product ID': Warehouse.product2id[batch.product],
 				'Remaining Units': batch.remaining_units,
 				'Expiry Date': batch.expiry_date
 			}
@@ -150,7 +151,11 @@ class Warehouse:
 		for p, s in self.batches.items():
 			for _, dates in s.items():
 				for _, batch in dates.items():
-					freshness[p][str(batch.get_freshness())] += batch.get_remaining_units()
+					fresh_state = str(batch.get_freshness())
+					if fresh_state == 'Freshness.EXPIRED':
+						freshness[p][fresh_state] = batch.wasted_units
+					else:
+						freshness[p][fresh_state] += batch.get_remaining_units()
 
 		return freshness
 
