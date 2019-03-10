@@ -22,6 +22,7 @@ warehouse.add_batch(product_3, 500, '2019-04-05')
 warehouse.add_batch(product_3, 500, '2019-03-05')
 sleep(1)
 warehouse.update_batch_stock_count(0, 2000)
+warehouse.update_batch_stock_count(5, 200)
 
 # Retrieve history of given batch
 @app.route('/inventory_manager/api/v1.0/get_batch_log/<int:batch_id>', methods=['GET'])
@@ -76,6 +77,7 @@ def update_batch(batch_id):
 	except ValueError:
 		abort(404)
 
+# Add a new batch to warehouse
 @app.route('/todo/api/v1.0/add_batch/', methods=['POST'])
 def add_batch():
 	try:
