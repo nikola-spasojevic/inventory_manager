@@ -25,7 +25,7 @@ warehouse.update_batch_stock_count(0, 2000)
 warehouse.update_batch_stock_count(5, 200)
 
 # Retrieve history of given batch
-@app.route('/inventory_manager/api/v1.0/get_batch_log/<int:batch_id>', methods=['GET'])
+@app.route('/inventory_manager/api/v1.0/batch_log/<int:batch_id>', methods=['GET'])
 def get_batch_log(batch_id):
 	try:
 		batch = warehouse.get_batch_by_id(batch_id)
@@ -34,7 +34,7 @@ def get_batch_log(batch_id):
 		abort(404)
 
 # Retrieve overview of freshness in warehouse
-@app.route('/inventory_manager/api/v1.0/get_freshness', methods=['GET'])
+@app.route('/inventory_manager/api/v1.0/freshness', methods=['GET'])
 def get_freshness():
 	try:
 		return jsonify(warehouse.get_freshness())
@@ -42,7 +42,7 @@ def get_freshness():
 		abort(404)
 
 # Retrieve Warehouse inventory
-@app.route('/inventory_manager/api/v1.0/get_warehouse_inventory', methods=['GET'])
+@app.route('/inventory_manager/api/v1.0/warehouse', methods=['GET'])
 def get_warehouse_inventory():
 	try:
 		return jsonify(warehouse.get_products())
@@ -50,7 +50,7 @@ def get_warehouse_inventory():
 		abort(404)
 
 # Retrieve Product inventory
-@app.route('/inventory_manager/api/v1.0/get_product_inventory/<int:product_id>', methods=['GET'])
+@app.route('/inventory_manager/api/v1.0/product/<int:product_id>', methods=['GET'])
 def get_product_inventory(product_id):
 	try:
 		return jsonify(warehouse.get_product_inventory(product_id))
@@ -58,7 +58,7 @@ def get_product_inventory(product_id):
 		abort(404)
 
 # Retrieve Batch inventory
-@app.route('/inventory_manager/api/v1.0/get_batch_inventory/<int:batch_id>', methods=['GET'])
+@app.route('/inventory_manager/api/v1.0/batch/<int:batch_id>', methods=['GET'])
 def get_batch(batch_id):
 	try:
 		return jsonify(warehouse.get_batch_inventory(batch_id))
@@ -66,7 +66,7 @@ def get_batch(batch_id):
 		abort(404)
 
 # Update/Modify stock of any batch
-@app.route('/inventory_manager/api/v1.0/update_batch/<int:batch_id>', methods=['PUT'])
+@app.route('/inventory_manager/api/v1.0/batch/<int:batch_id>', methods=['PUT'])
 def update_batch(batch_id):
 	try:	
 		batch = warehouse.get_batch_by_id(batch_id)
@@ -78,14 +78,14 @@ def update_batch(batch_id):
 		abort(404)
 
 # Add a new batch to warehouse
-@app.route('/todo/api/v1.0/add_batch/', methods=['POST'])
+@app.route('/inventory_manager/api/v1.0/batch', methods=['POST'])
 def add_batch():
 	try:
 		new_batch = request.json['batch']
-		product = Product(new_batch['product']['product_name'], new_batch['product']['supplier'])
-		batch_id = warehouse.add_batch(product, new_batch['total_stock_count'], new_batch['expiry_date'])
-		return jsonify(new_batch)
-	except:
+		product = Product(new_batch['product_name'], new_batch['supplier'])
+		batch_id = warehouse.add_batch(product, int(new_batch['total_stock_count']), new_batch['expiry_date'])
+		return jsonify(warehouse.get_batch_inventory(batch_id))
+	except ValueError:
 		abort(404)
 
 if __name__ == '__main__':

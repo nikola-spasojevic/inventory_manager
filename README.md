@@ -13,24 +13,38 @@ also, with 'id2batch' mapping of unique batch id to batch
 !!!Run with local dummy data (with flask)!!!
 
 # Retrieve history of given batch
-curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/get_batch_log/<int:batch_id> | python -m json.tool
+curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/batch_log/<int:batch_id> | python -m json.tool
 
 # Retrieve overview of freshness in warehouse
-curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/get_freshness | python -m json.tool
+curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/freshness | python -m json.tool
 
 # Retrieve Warehouse inventory
-curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/get_warehouse_inventory | python -m json.tool
+curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/warehouse | python -m json.tool
 
 # Retrieve Product inventory
-curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/get_product_inventory/<int:product_id> | python -m json.tool
+curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/product/<int:product_id> | python -m json.tool
 
 # Retrieve Batch inventory
-curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/get_batch_inventory/<int:batch_id> | python -m json.tool
+curl -XGET -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/batch/<int:batch_id> | python -m json.tool
 
 # Update/Modify stock of any batch
-curl -XPUT -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/update_batch/<int:batch_id> | python -m json.tool
+curl -XPUT -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/batch/<int:batch_id> | python -m json.tool
+
+
 
 # Add a new batch to warehouse
-curl -XPOST -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/add_batch | python -m json.tool
+curl -XPOST -H "Accept:application/json"  http://localhost:5000/inventory_manager/api/v1.0/batch | python -m json.tool
+
+(example raw json post:
+	{"batch":
+		{
+			"product_name": "Tonkatsu",
+			"supplier": "Kokoro",
+			"total_stock_count": "1000",
+			"expiry_date": "2019-04-10"
+		}
+	}
+)
+
 
 
